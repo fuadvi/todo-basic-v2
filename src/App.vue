@@ -35,9 +35,14 @@ export default {
     },
      doneTodo (indexTodo){
       this.todos = this.todos.filter((item,index) => {
-        if (index == indexTodo) {
+        if (index == indexTodo && item.isDone == false) {
           return item.isDone = true;
         }
+
+        if (index == indexTodo && item.isDone == true) {
+           item.isDone = false;
+        }
+
         return item
       });
       this.saveToStorage();
@@ -50,6 +55,17 @@ export default {
   computed:{
     totalTodo() {
       return this.todos.length
+    },
+    progressBar(){
+      const bar = []
+      this.todos.map(function(v){
+        if (v.isDone) {
+          return bar.push(v.isDone)
+        }
+      })
+      
+      return (bar.length / this.todos.length) * 100
+      // return this.bar.length
     }
   }
 }
@@ -74,6 +90,9 @@ export default {
       <todos :todos="todos" @deleteTodo="deleteTodo" @doneTodo="doneTodo" />
       <br>
       <small>Total Todo : {{ totalTodo }}</small>
+      <div class="progress mt-3">
+        <div class="progress-bar" role="progressbar" v-bind:style="{ width: progressBar+'%' }" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ progressBar }}%</div>
+      </div>
     </div>
   </div>
 </div>
