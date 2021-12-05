@@ -38,13 +38,15 @@ export default {
       default:[]
     }
   },
-  methods: {
-    deleteTodo(index) {
-      this.$emit('deleteTodo',index)
-    },
-    doneTodo(index){
-      this.$emit('doneTodo',index)
-    }
+   setup(props,{emit}){
+     const deleteTodo = index => {
+       emit('deleteTodo',index)
+     }
+     const doneTodo = index => {
+       emit('doneTodo',index)
+     }
+
+     return {deleteTodo,doneTodo}
   },
 }
 </script>

@@ -1,40 +1,58 @@
 <script>
-import Todos from './components/list.vue'
+import { reactive,ref,computed,onMounted,toRefs } from "vue";
+import List from './components/list.vue'
 export default {
-  components:{Todos},
-  data() {
-    return {
-      todo:'',
-      todos:[]
-    }
-  },
-  mounted() {
-    const storage = JSON.parse(localStorage.getItem('todos'))
-    if(storage)
-      this.todos  = storage
-  },
-  methods: {
-    add(){
-       this.todos.unshift({
-         activity:this.todo,
+components:{List},
+  setup() {
+    const todo = ref('')
+    const todos = reactive({
+      list: [],
+    })
+
+    onMounted(() => {
+      const storage = JSON.parse(localStorage.getItem('todos'))
+      if(storage)
+        todos.list  = storage
+    });
+
+    const totalTodo = computed(() => {
+      return todos.list.length
+    }) 
+
+    const progressBar = computed(() => {
+       const bar = []
+      todos.list.map(function(v){
+        if (v.isDone) {
+          return bar.push(v.isDone)
+        }
+      })
+      
+      return (bar.length / todos.list.length) * 100
+    })
+
+    const add = () => {
+       todos.list.unshift({
+         activity:todo.value,
          isDone: false
        });
 
-       this.todo = '';
+       todo.value = '';
 
-       this.saveToStorage();
-    },
-    deleteTodo(indexTodo){
-     this.todos = this.todos.filter((item,index) => {
+       saveToStorage();
+    }
+
+    const deleteTodo = indexTodo => {
+      todos.list = todos.list.filter((item,index) => {
         if (index != indexTodo) {
           return item
         }
       });
 
-      this.saveToStorage();
-    },
-     doneTodo (indexTodo){
-      this.todos = this.todos.filter((item,index) => {
+      saveToStorage();
+    }
+
+    const doneTodo = indexTodo => {
+      todos.list = todos.list.filter((item,index) => {
         if (index == indexTodo && item.isDone == false) {
           return item.isDone = true;
         }
@@ -45,29 +63,25 @@ export default {
 
         return item
       });
-      this.saveToStorage();
+      saveToStorage();
 
-    },
-    saveToStorage(){
-      localStorage.setItem('todos',JSON.stringify(this.todos))
     }
+
+    const saveToStorage = () => {
+      localStorage.setItem('todos',JSON.stringify(todos.list))
+    }
+
+    return {
+      todo,
+      ...toRefs(todos),
+      totalTodo,
+      progressBar,
+      add,
+      deleteTodo,
+      doneTodo
+    }
+
   },
-  computed:{
-    totalTodo() {
-      return this.todos.length
-    },
-    progressBar(){
-      const bar = []
-      this.todos.map(function(v){
-        if (v.isDone) {
-          return bar.push(v.isDone)
-        }
-      })
-      
-      return (bar.length / this.todos.length) * 100
-      // return this.bar.length
-    }
-  }
 }
 
 </script>
@@ -87,7 +101,7 @@ export default {
           <button class="btn btn-success" @click="add">Add</button>
         </div>
       </div>
-      <todos :todos="todos" @deleteTodo="deleteTodo" @doneTodo="doneTodo" />
+      <list :todos="list" @deleteTodo="deleteTodo" @doneTodo="doneTodo" />
       <br>
       <small>Total Todo : {{ totalTodo }}</small>
       <div class="progress mt-3">
